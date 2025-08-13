@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  api-gateway:
+    build: 
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "5001:5000"
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - user-service
+      - order-service
+      - product-service
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+
+  user-service:
+    build: 
+      context: ./services/user_service
+      dockerfile: Dockerfile
+    container_name: user-service
+    ports:
+      - "5002:5001"
+
+  order-service:
+    build: 
+      context: ./services/order_service
+      dockerfile: Dockerfile
+    container_name: order-service
+    ports:
+      - "5003:5002"
+
+  product-service:
+    build: 
+      context: ./services/product_service
+      dockerfile: Dockerfile
+    container_name: product-service
+    ports:
+      - "5004:5003"
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"  # Exposing port 6379 to the host
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+      timeout: 5s
